@@ -15,6 +15,10 @@ for option in "$@"; do
             IMAGE_TAG="${option#*=}"
             shift
         ;;
+        --job-image-aliastag=*)
+            IMAGE_TAG_ALIAS="${option#*=}"
+            shift
+        ;;
         --job-image-name=*)
             IMAGE_NAME="${option#*=}"
             shift
@@ -45,6 +49,7 @@ IMAGE_PATH=${IMAGE_PATH:-}
 IMAGE_BUILD=${IMAGE_BUILD:-}
 IMAGE_PATH_COPY=${IMAGE_PATH_COPY:-0}
 IMAGE_PATH_BUILD=${IMAGE_PATH_BUILD:-}
+IMAGE_TAG_ALIAS=${IMAGE_TAG_ALIAS:-}
 
 if [ -z "${IMAGE_PATH}" ]; then
     IMAGE_PATH=config/docker/image/${IMAGE_NAME}
@@ -94,3 +99,13 @@ echo "push the image"
 echo "... cmd: docker push ${REGISTRY}/${IMAGE_TAG}"
 (docker push ${REGISTRY}/${IMAGE_TAG}) || true
 echo "done"
+
+for tag in "${IMAGE_TAG_ALIAS}"
+do
+    echo "push the tag"
+    echo "... cmd: docker push ${REGISTRY}/${tag}"
+    docker tag ${REGISTRY}/${IMAGE_TAG} ${REGISTRY}/${tag}
+    docker push ${REGISTRY}/${tag}
+    echo "done"
+done
+
